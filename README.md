@@ -1,6 +1,6 @@
-# Servy
+## Servy
 
-**TODO: Add description**
+This project is part of The Pragmatic Studio's course on Elixir, which I am currently taking and coding along with. I have created a repo for it, solely for the purpose of my own learning as I approach a new programming language. I do not present this as my own work, though I may modify it as I gain comfort in working with Elixir.
 
 ## Installation
 
@@ -18,4 +18,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/servy](https://hexdocs.pm/servy).
-
