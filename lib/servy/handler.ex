@@ -1,48 +1,25 @@
 # Think - transforming data with functions
 
 defmodule Servy.Handler do
+
+    @moduledoc "Handles HTTP requests."
+
+    @pages_path Path.expand("../../pages", __DIR__)
+
+    import Servy.Plugins, only: [rewrite_path: 1, log: 1, track: 1]
+    import Servy.Parser, only: [parse: 1]
+
+    @doc "Transforms the request into a response."
     def handle(request) do
 
         request 
         |> parse 
+        |> rewrite_path
         |> log 
         |> route 
         |> track
         |> format_response
     end
-
-    def track(%{status: 404, path: path} = conv) do
-        IO.puts "Warning: #{path} is on the loose!"
-        conv
-    end
-
-    def track(conv), do: conv
-
-    def rewrite_path(%{path: "/wildlife"} = conv) do
-        %{ conv | path: "/wildthings"}
-    end
-
-    def rewrite_path(conv), do: conv
-
-    def log(conv), do: IO.inspect conv
-
-    def parse(request) do
-        [method, path, _] =
-            request 
-            |> String.split("\n") 
-            |> List.first
-            |> String.split(" ")
-            
-        %{ method: method, 
-            path: path, 
-            resp_body: "",
-            status: nil
-        }
-    end
-
-    # def route(conv) do
-    #     route(conv, conv.method, conv.path)
-    # end
 
     def route(%{ method: "GET", path: "/wildthings" } = conv) do
         %{ conv | status: 200, resp_body: "Bears, Lions, Tigers" }
@@ -58,6 +35,25 @@ defmodule Servy.Handler do
 
     def route(%{path: path} = conv) do
         %{ conv | status: 404, resp_body: "No #{path} here!"}
+    end
+
+    def route(%{ method: "GET", path: "/about" } = conv) do
+        @pages_path
+        |> Path.join("about.html")
+        |> File.read
+        |> handle_file(conv)
+    end
+
+    def handle_file({:ok, content}, conv) do
+        %{ conv | status: 200, resp_body: content }
+    end
+
+    def handle_file({:error, :enoent}, conv) do
+        %{ conv | status: 404, resp_body: "File not found!" }
+    end
+
+    def handle_file({:error, reason}, conv) do
+        %{ conv | status: 500, resp_body: "File error: #{reason}" }
     end
 
     def format_response(conv) do
@@ -104,13 +100,24 @@ response = Servy.Handler.handle(request)
 
 IO.puts response
 
-# request = """
-# GET /bigfoot HTTP/1.1
-# Host: example.com
-# User-Agent: ExampleBrowser/1.0
-# Accept: */*
-# """
+request = """
+GET /bigfoot HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+"""
 
-# response = Servy.Handler.handle(request)
+response = Servy.Handler.handle(request)
 
-# IO.puts response
+IO.puts response
+
+request = """
+GET /wildlife HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
