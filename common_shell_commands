@@ -1,0 +1,2 @@
+Servy.HttpServer.start(4001)
+curl http://localhost:4001/sensors
